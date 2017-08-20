@@ -24,4 +24,13 @@ SP = 3 * 512;
 
 [28 * 512] = 0; // Set up the IP value for INIT in the stack 
 
+// Load Interrupt 1 Routine from disk to memory
+load (11, 5);
+load (12, 6);
+
+//timer
+
+load (9, 3);
+load (10, 4);
+
 ireturn;
