@@ -1,7 +1,6 @@
 alias currentPID S0;
 currentPID = (PTBR - 1024) / 8;
 
-print("TIMER");
 //round-robin
 
 alias ctr S3;
