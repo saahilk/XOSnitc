@@ -1,2 +1,83 @@
-print "TIMER";
-ireturn; 
+alias currentPID S0;
+currentPID = (PTBR - 1024) / 8;
+
+print("TIMER");
+//round-robin
+
+alias ctr S3;
+alias newPCB S4;
+
+ctr=1;
+while(ctr<32) do	
+	
+	newPCB=READY_LIST+32*((currentPID+ctr)%32);
+
+	if ([newPCB + 1] == 1) then
+
+		alias currentPCB S1;
+		currentPCB = READY_LIST + 32 * currentPID;
+		[ currentPCB + 1 ] = 1;
+
+		[ currentPCB + 2 ] = BP;
+		[ currentPCB + 3 ] = SP - 1; 
+
+		alias physicalSP S2;
+		physicalSP = ([PTBR + 2 * (SP / 512)] * 512) + (SP % 512); 
+
+		// Save IP of current process in the PCB from the stack
+		[ currentPCB + 4 ] = [ physicalSP ]; 
+
+		[ currentPCB + 5 ] = PTBR;
+		[ currentPCB + 6 ] = PTLR ; 
+
+		[ currentPCB + 7 ] = R0; 
+		[ currentPCB + 8 ] = R1;
+		[ currentPCB + 9 ] = R2;
+		[ currentPCB + 10 ] = R3;
+		[ currentPCB + 11 ] = R4;
+		[ currentPCB + 12 ] = R5;
+		[ currentPCB + 13 ] = R6;
+		[ currentPCB + 14 ] = R7;    
+
+
+
+		// set the values of SP and BP
+		BP = [newPCB + 2];
+		SP = [newPCB + 3];	
+		
+		// set PTBR and PTLR
+		PTBR = [newPCB + 5];
+		PTLR = [newPCB + 6];
+		
+		// set the value of registers R0 - R7
+
+		R0 = [newPCB + 7];
+		R1 = [newPCB + 8];
+		R2 = [newPCB + 9];
+		R3 = [newPCB + 10];
+		R4 = [newPCB + 11];
+		R5 = [newPCB + 12];
+		R6 = [newPCB + 13];
+		R7 = [newPCB + 14];
+
+		//Sets IP
+
+		SP=SP+1;
+		alias newPhysicalSP S2;
+		newPhysicalSP = ([PTBR + 2 * (SP / 512)] * 512) + (SP % 512);
+		[newPhysicalSP] = [newPCB + 4];   	// Stores IP field value of PCB on the stack 
+
+		[newPCB+1]=2;
+
+		break;
+	endif;
+
+	ctr=ctr+1;
+endwhile;
+	
+ireturn;
+	
+	
+		
+
+   
