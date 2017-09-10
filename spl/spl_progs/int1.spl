@@ -1,0 +1,102 @@
+alias physicalSP S0;
+physicalSP = ([PTBR + 2 * (SP / 512)] * 512) + (SP % 512);
+
+alias sysCallNo S1;
+sysCallNo=[physicalSP-1];
+
+//fetching arguments
+//SP-2 is space for return value
+
+alias filename S2;
+filename=[physicalSP-3];
+
+
+//create
+
+if(sysCallNo==1) then
+
+	alias ctr S4;
+	ctr=0;
+
+	//if file exists do nothing return 0
+	
+	//Each FAT entry is 8 words
+
+	while(ctr<512) do
+		if([FAT+ctr]==filename) then		
+			[physicalSP-2]=0;
+			ireturn;
+		endif;
+		ctr=ctr+8;
+	endwhile;	
+
+	//if file does not exist create new file
+	// ctr=512 after while loop
+	//512+447=959 since 448-551 is swap area
+
+	while(ctr<=959) do
+		if([FAT+ctr]==0) then
+			//freeblock
+			break;
+		endif;
+		ctr=ctr+1;
+	endwhile;
+	
+	
+
+	if(ctr>959) then			//no space
+		[physicalSP-2]=-1;
+		ireturn;
+	endif;
+
+						//ctr is index of basic block
+	alias FATctr S5;			//if space is there
+	FATctr=0;
+	if(ctr<=959) then
+		while(FATctr<512) do
+			if([FAT+FATctr+2]==-1) then
+				[FAT+FATctr]=filename;
+				[FAT+FATctr+1]=0;
+				[FAT+FATctr+2]=ctr-512;
+				load(1,ctr-512);
+
+				alias fctr S6;
+				fctr=0;
+
+				//512+256=768
+				while(fctr<768) do
+					[fctr]=-1;
+					fctr=fctr+1;
+				endwhile;
+
+				store(1,ctr-512);
+
+				//df-entry set to 1
+				[FAT+ctr]=1;
+
+				store(5,19);
+				store(6,20);
+
+				[physicalSP-2]=0;
+				ireturn;
+				
+			endif;
+			FATctr=FATctr+8;
+		endwhile;
+		
+		//no free entry
+		if(FATctr==512) then
+			[physicalSP-2]=-1;
+			ireturn;
+		endif;
+	endif;	
+endif;
+
+
+
+
+//delete
+
+//if(sysCallNo==4) then
+	
+//endif;

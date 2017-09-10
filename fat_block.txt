@@ -1,4 +1,4 @@
-sample.dat
+even.xsm
 512
 24
 
@@ -6,8 +6,8 @@ sample.dat
 
 
 
-even.xsm
-512
+myfile.dat
+0
 26
 
 

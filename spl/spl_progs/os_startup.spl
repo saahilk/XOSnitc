@@ -28,36 +28,15 @@ SP = 3 * 512;
 load (11, 5);
 load (12, 6);
 
+//fat-block
+load(5,19);
+
+//df-list 
+load(6,20);
+
 //timer
 
 load (9, 3);
 load (10, 4);
-
-//2nd process
-
-[READY_LIST + 32] = 1;		// Sets the entry for PID as 1
-load(29,25);
-
-alias PTBR_Process1 S0;
-PTBR_Process1 = 1024 + 1 * 8;
-
-[PTBR_Process1 + 0] = 29; // Physical Page Number for Logical Page 0
-[PTBR_Process1 + 1] = "01"; // Not referenced and Valid
-[PTBR_Process1 + 2] = -1; // Invalid Page Number for Logical Page 1
-[PTBR_Process1 + 3] = "00"; // Not referenced and Not Valid
-[PTBR_Process1 + 4] = -1; // Invalid Page Number for Logical Page 1
-[PTBR_Process1 + 5] = "00"; // Not referenced and Not Valid
-[PTBR_Process1 + 6] = 30; // Physical Page Number for Logical Page 3
-[PTBR_Process1 + 7] = "01"; // Not referenced and Valid
-
-[READY_LIST + 33] = 1; // STATE is READY 
-
-[READY_LIST + 37] = PTBR_Process1; // PTBR
-[READY_LIST + 38] = 4; // PTLR 
-
-[READY_LIST + 34] = 3 * 512; // Sets the entry for BP in the PCB
-[READY_LIST + 35] = 3 * 512; // Sets the entry for SP in the PCB 
-
-[READY_LIST + 36] = 0; // Sets the entry for IP to logical address 0 in the PCB 
 
 ireturn;
