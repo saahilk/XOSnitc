@@ -60,8 +60,8 @@ if(sysCallNo==1) then
 				[FAT+FATctr+2]=ctr-512;
 				load(1,ctr-512);
 
-				alias fctr S6;
-				fctr=0;
+				alias fctr S6;		//scratchpad is mem page 1
+				fctr=512;
 
 				//512+256=768
 				while(fctr<768) do
