@@ -1,0 +1,135 @@
+alias physicalSP S0;
+physicalSP = ([PTBR + 2 * (SP / 512)] * 512) + (SP % 512);
+
+alias sysCallNo S1;
+sysCallNo=[physicalSP-1];
+
+//fetching arguments
+//SP-2 is space for return value
+
+
+if(sysCallNo==2) then
+	alias ctr S3;
+	ctr=0;
+
+	alias filename S2;
+	filename=[physicalSP-3];
+
+	//checking FATindex
+	while(ctr<512) do
+		if([FAT+ctr]==filename) then
+			break;
+		endif;
+		ctr=ctr+8;
+	endwhile;
+
+	//If file not found
+	if(ctr==512) then
+		[physicalSP-2]=-1;
+		ireturn;
+	endif;
+
+	//0 based FAT index 
+	ctr=ctr/8;
+
+	alias fentry S4;
+	fentry=0;
+	alias freeEntry S5;
+	freeEntry=-1;
+
+	while(fentry<128) do
+		if([FILE_TABLE+fentry]==ctr) then
+			break;
+		endif;
+		if(freeEntry==-1 && [FILE_TABLE+fentry]==-1) then
+			freeEntry=fentry;
+		endif;
+
+		fentry=fentry+2;
+	endwhile;
+
+	//if file not in sys wide open table
+	//if no free entry in SWOT
+	if(fentry>=128 && freeEntry==-1) then
+		[physicalSP-2]=-1;
+		ireturn;
+	endif;
+
+	//Searching free entry in file table
+	alias Pid S6;
+	Pid=(PTBR-1024)/8;
+
+	alias fileTablectr S7;
+	fileTablectr=0;
+
+	while(fileTablectr<8) do
+		if([READY_LIST+32*Pid+fileTablectr*2+15]==-1) then
+			break;
+		endif;
+		fileTablectr=fileTablectr+1;
+	endwhile;
+
+	
+	//if file table full
+
+	if(fileTablectr==8) then
+		[physicalSP-2]=-1;
+		ireturn;
+	endif;
+
+	
+	//if file entry alreaddy in sys wide open table
+
+	if(fentry<128) then
+		[READY_LIST+32*Pid+fileTablectr*2+15]=fentry/2;
+		[READY_LIST+32*Pid+fileTablectr*2+15+1]=0;
+		[FILE_TABLE+fentry+1]=1+[FILE_TABLE+fentry+1];
+		[physicalSP-2]=fileTablectr;
+		ireturn;
+	endif;
+
+	//if file not in sys wide open table
+
+	if(fentry>=128) then
+
+		//if free entry there in SWOT
+		[READY_LIST+32*Pid+fileTablectr*2+15]=freeEntry;
+		[READY_LIST+32*Pid+fileTablectr*2+15+1]=0;
+		[FILE_TABLE+fentry+1]=0;
+		[physicalSP-2]=fileTablectr;
+		ireturn;
+	endif;
+
+
+endif;
+
+if(sysCallNo==3) then
+	alias fileDescriptor S2;
+	fileDescriptor=[physicalSP-3];
+	
+	if(fileDescriptor<0 || fileDescriptor>8)then
+		[physicalSP-2]=-1;
+		ireturn;
+	endif;
+
+	alias Pid S3;
+	Pid=(PTBR-1024)/8;
+	if([READY_LIST+32*Pid+15+2*fileDescriptor]==-1)then
+		[physicalSP-2]=-1;
+		ireturn;
+	endif;
+
+	alias SWOTind S4;
+	SWOTind=[READY_LIST+32*Pid+15+2*fileDescriptor+1];
+	[FILE_TABLE+2*SWOTind+1]=[FILE_TABLE+2*SWOTind+1]-1;
+	if([FILE_TABLE+2*SWOTind+1]==0) then
+		[FILE_TABLE+2*SWOTind]=-1;
+	endif;
+
+	[READY_LIST+32*Pid+15+2*fileDescriptor]=-1;
+	[READY_LIST+32*Pid+15+2*fileDescriptor+1]=-1;
+
+	[physicalSP-2]=0;
+	ireturn;
+
+endif;

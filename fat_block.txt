@@ -14,9 +14,9 @@ myfile.dat
 
 
 
--1
+myfilelengt.d
 0
--1
+27
 
 
 

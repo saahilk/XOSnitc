@@ -3,7 +3,7 @@ decl
 enddecl
 integer main()
 {
-	status = Create("myfile.dat");
+	status = Delete("myfiler.dat");
 	print(status);
 	return 0;
 }

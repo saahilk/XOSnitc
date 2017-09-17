@@ -1,8 +1,17 @@
+
+//exception handler
 load(7,1);
 load(8,2);
+
+//interrupt 7
 load(23,17);
 load(24,18);
+
+//init process
+//PID
 [READY_LIST + 0] = 0;
+
+
 load(25,21); // Load 1st page of code from disk to memory
 load(26,22); // Load 2nd page of code from disk to memory
 load(27,23); // Load 3rd page of code from disk to memory
@@ -27,6 +36,16 @@ SP = 3 * 512;
 // Load Interrupt 1 Routine from disk to memory
 load (11, 5);
 load (12, 6);
+// Load Interrupt 2 Routine from disk to memory
+load (13, 7);
+load (14, 8);
+// Load Interrupt 3 Routine from disk to memory
+load (15, 9);
+load (16, 10);
+// Load Interrupt 4 Routine from disk to memory
+load (17, 11);
+load (18, 12);
+
 
 //fat-block
 load(5,19);
@@ -38,5 +57,21 @@ load(6,20);
 
 load (9, 3);
 load (10, 4);
+
+alias counter S0;			
+counter = 0;
+while ( counter <  128) do			// 64 entries, each of size 2 words
+	[ FILE_TABLE + counter + 0] = -1;	// Set FAT Index to -1
+	[ FILE_TABLE + counter + 1] =  0;	// Set File Open Count to 0
+	counter = counter + 2;			// Move to next entry
+endwhile;	
+
+counter=15;
+
+while(counter<31) do
+	[READY_LIST+counter]=-1;
+	counter=counter+1;
+endwhile;
+
 
 ireturn;

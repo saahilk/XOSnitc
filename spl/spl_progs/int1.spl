@@ -60,7 +60,7 @@ if(sysCallNo==1) then
 				[FAT+FATctr+2]=ctr-512;
 				load(1,ctr-512);
 
-				alias fctr S6;		//scratchpad is mem page 1
+				alias fctr S6;		//scratchpad is mem page 1 so 512
 				fctr=512;
 
 				//512+256=768
@@ -97,6 +97,73 @@ endif;
 
 //delete
 
-//if(sysCallNo==4) then
-	
-//endif;
+if(sysCallNo==4) then
+		
+	alias ctr S4;
+	ctr=0;
+
+	while(ctr<512) do
+		if([FAT+ctr]==filename) then		
+			break;
+		endif;
+		ctr=ctr+8;
+	endwhile;	
+
+	if(ctr==512)then
+		[physicalSP-2]=-1;
+		ireturn;
+	endif;
+
+	alias fentry S3;
+	fentry=0;
+
+	while(fentry<128) do
+		if([FILE_TABLE+fentry]==ctr) then
+			[physicalSP-2]=-1;
+			ireturn;
+		endif;
+		fentry=fentry+2;
+	endwhile;
+
+	alias cur S5;
+	cur=0;
+	alias datactr S6;
+	alias datablk S7;
+	alias basicblk S8;
+	basicblk= [FAT+ctr+2];
+	while(cur<256) do
+		load(1,basicblk);
+		if([SCRATCHPAD+cur]==-1 || [SCRATCHPAD+cur]=="") then
+			break;
+		endif;
+		datablk=[SCRATCHPAD+cur];
+		load(1,datablk);
+		datactr=0;
+		while(datactr<512) do
+			[SCRATCHPAD+datactr]="";
+			datactr=datactr+1;
+		endwhile;
+		store(1,datablk);
+		[DISK_LIST+datablk]=0;
+		cur=cur+1;
+	endwhile;
+
+	load(1,basicblk);
+	datactr=0;
+
+	while(datactr<256) do
+		[SCRATCHPAD+datactr]="";
+		datactr=datactr+1;
+	endwhile;
+
+	[DISK_LIST+basicblk]=0;
+	[FAT+ctr]=-1;
+	[FAT+ctr+1]=-1;
+	[FAT+ctr+2]=0;
+
+	store(5,19);
+	store(6,20);
+	[physicalSP-2]=0;
+	ireturn;
+
+endif;

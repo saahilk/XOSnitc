@@ -6,10 +6,10 @@ JMP 00010
 PUSH BP
 MOV BP,SP
 MOV R0, 1536
-MOV R1, "myfile.dat"
+MOV R1, "myfiler.dat"
 PUSH R1
 PUSH R0
-MOV R1, 1
+MOV R1, 4
 PUSH R1
 INT 1
 POP R2
