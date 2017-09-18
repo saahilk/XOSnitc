@@ -69,13 +69,14 @@ if(sysCallNo==5) then
 			ireturn;
 		endif;
 
-		print("d");
+		//print("d");
 		[DISK_LIST+cur]=1;
 		[SCRATCHPAD+datblk]=cur;
 		store(1,[FAT+fentry*8+2]);
 		[FAT+fentry+1]=[FAT+fentry+1]+512;
 		store(5,19);
 		store(6,20);
+		blkno=cur;
 	endif;
 
 	
