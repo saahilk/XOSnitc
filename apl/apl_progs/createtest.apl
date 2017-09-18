@@ -3,11 +3,11 @@ decl
 enddecl
 integer main()
 {
-	status = Create("myfile.dat");
+	status = Create("mynigga.dat");
 	print(status);
-	status = Open("myfile.dat");
+	status = Open("mynigga.dat");
 	print(status);
-	status= Write(0,"myfile.dat");
+	status= Write(0,"HELLO");
 	print(status);
 	return 0;
 }

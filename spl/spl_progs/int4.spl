@@ -21,22 +21,31 @@ if(sysCallNo==5) then
 	alias curPCB S5;
 	curPCB=READY_LIST+32*Pid;
 
+	//print("a");
+
 	if([curPCB+15+2*fileDescriptor]==-1) then
+		
 		[physicalSP-2]=-1;
 		ireturn;
 	endif;
+
+	//print("b");
 
 	alias SWOTentry S6;
 	alias lseekpos S7;
 	SWOTentry=[curPCB+15+2*fileDescriptor];
 	lseekpos=[curPCB+15+2*fileDescriptor+1];
 
+	//print(SWOTentry);	
+
 	alias fentry S8;
-	fentry=[FILE_TABLE+SWOTentry*2+1];
+	fentry=[FILE_TABLE+SWOTentry*2];
+
+	//print(fentry);
 
 	load(1,[FAT+fentry*8+2]);
 
-	alias datblk S9;
+	alias datblk S9;	
 	datblk=lseekpos/512;
 
 	alias blkno S11;
@@ -47,17 +56,20 @@ if(sysCallNo==5) then
 		alias cur S10;
 		cur=0;
 		while(cur<448) do
-			if([DISK_LIST+cur]==-1) then
+			if([DISK_LIST+cur]==0) then
 				break;
 			endif;
 			cur=cur+1;
 		endwhile;
+
+		//print("c");
 
 		if(cur==448) then
 			[physicalSP-2]=-1;
 			ireturn;
 		endif;
 
+		print("d");
 		[DISK_LIST+cur]=1;
 		[SCRATCHPAD+datblk]=cur;
 		store(1,[FAT+fentry*8+2]);

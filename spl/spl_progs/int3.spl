@@ -1,12 +1,12 @@
 alias physicalSP S0;
 alias sysCallNo S1;
-alias newLseek S2;
+
 alias fileDescriptor S3;
 physicalSP = ([PTBR + 2 * (SP / 512)] * 512) + (SP % 512);
 // Get system call no. from the stack and put it in a register
 sysCallNo = [physicalSP - 1];
 // Get arguments from stack and put it in registers
-newLseek = [physicalSP - 3];
+
 fileDescriptor = [physicalSP - 4];
 if (fileDescriptor < 0 || fileDescriptor > 7) then
     [physicalSP - 2] = -1;
@@ -18,6 +18,9 @@ if ( sysCallNo == 6) then
     
     //checking fileDescriptor entry in PCB
     
+    alias newLseek S2;
+    newLseek = [physicalSP - 3];
+
     //Get PID from PTBR
     alias PID S4;
     PID = (PTBR - 1024)/8;
@@ -50,10 +53,50 @@ if ( sysCallNo == 6) then
     [physicalSP-2]=0;
     ireturn;
     
-    
-    
-    
-    
-    
+endif;
+
+
+if(sysCallNo==7) then
 	
+	alias wordRead S2;
+    wordRead= [physicalSP - 3];
+
+	alias PID S4;
+    PID = (PTBR - 1024)/8;
+    
+    if ([READY_LIST + 32*PID + fileDescriptor*2 + 15] == -1) then
+        [physicalSP - 2] = -1;
+        ireturn;
+    endif;
+
+    alias systemFilePointer S5;
+    systemFilePointer = [READY_LIST + 32*PID + fileDescriptor*2+15];
+    alias lseekpos S6;
+    lseekpos=[READY_LIST + 32*PID + fileDescriptor*2+16];
+
+    alias fatCtr S7;
+    fatCtr=[FILE_TABLE+2*systemFilePointer];
+
+    load(1,[FAT+fatCtr*8+2]);
+
+    alias filesize S8;
+    filesize=[FAT+fatCtr*8+1];
+
+    if(lseekpos==filesize) then
+    	[physicalSP-2]=-1;
+    	ireturn;
+    endif;
+
+    alias datablk S9;
+    datablk=lseekpos/512;
+
+    load(1,[SCRATCHPAD+datablk]);
+
+    [physicalSP-3]=[SCRATCHPAD+lseekpos%512];
+
+    [READY_LIST + 32*PID + fileDescriptor*2+16]=1+[READY_LIST + 32*PID + fileDescriptor*2+16];
+
+    [physicalSP-2]=0;
+    ireturn;
+
 endif;

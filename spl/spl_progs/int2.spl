@@ -91,11 +91,12 @@ if(sysCallNo==2) then
 	//if file not in sys wide open table
 
 	if(fentry>=128) then
-
+		//print("Fentry>=128");
 		//if free entry there in SWOT
 		[READY_LIST+32*Pid+fileTablectr*2+15]=freeEntry;
 		[READY_LIST+32*Pid+fileTablectr*2+15+1]=0;
-		[FILE_TABLE+fentry+1]=0;
+		[FILE_TABLE+freeEntry]=ctr;
+		[FILE_TABLE+freeEntry+1]=1;
 		[physicalSP-2]=fileTablectr;
 		ireturn;
 	endif;
@@ -128,7 +129,6 @@ if(sysCallNo==3) then
 
 	[READY_LIST+32*Pid+15+2*fileDescriptor]=-1;
 	[READY_LIST+32*Pid+15+2*fileDescriptor+1]=-1;
-
 	[physicalSP-2]=0;
 	ireturn;
 
