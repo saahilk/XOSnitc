@@ -158,8 +158,8 @@ if(sysCallNo==4) then
 
 	[DISK_LIST+basicblk]=0;
 	[FAT+ctr]=-1;
-	[FAT+ctr+1]=-1;
-	[FAT+ctr+2]=0;
+	[FAT+ctr+1]=-0;
+	[FAT+ctr+2]=-1;
 
 	store(5,19);
 	store(6,20);

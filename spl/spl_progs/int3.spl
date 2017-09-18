@@ -1,0 +1,59 @@
+alias physicalSP S0;
+alias sysCallNo S1;
+alias newLseek S2;
+alias fileDescriptor S3;
+physicalSP = ([PTBR + 2 * (SP / 512)] * 512) + (SP % 512);
+// Get system call no. from the stack and put it in a register
+sysCallNo = [physicalSP - 1];
+// Get arguments from stack and put it in registers
+newLseek = [physicalSP - 3];
+fileDescriptor = [physicalSP - 4];
+if (fileDescriptor < 0 || fileDescriptor > 7) then
+    [physicalSP - 2] = -1;
+    ireturn;
+endif;
+
+if ( sysCallNo == 6) then
+	// Implementation of Seek
+    
+    //checking fileDescriptor entry in PCB
+    
+    //Get PID from PTBR
+    alias PID S4;
+    PID = (PTBR - 1024)/8;
+    
+    if ([READY_LIST + 32*PID + fileDescriptor*2 + 15] == -1) then
+        [physicalSP - 2] = -1;
+        ireturn;
+    endif;
+    
+    //File descriptor points to a file
+    
+    alias systemFilePointer S5;
+    systemFilePointer = [READY_LIST + 32*PID + fileDescriptor*2 + 15];
+    
+    //Using systemFilePointer get the FAT entry from System Wide File Table
+    
+    alias fatCtr S1;
+    
+    fatCtr = [FILE_TABLE + 2*systemFilePointer];
+
+    alias filesize S6;
+    filesize=[FAT+fatCtr*8+1];
+    if(newLseek<0 || newLseek>=filesize) then
+    	[physicalSP-2]=-1;
+    	ireturn;
+    endif;
+
+    [READY_LIST + 32*PID + fileDescriptor*2 + 16]=newLseek;
+
+    [physicalSP-2]=0;
+    ireturn;
+    
+    
+    
+    
+    
+    
+	
+endif;
