@@ -134,7 +134,8 @@ if(sysCallNo==4) then
 	while(cur<256) do
 		load(1,basicblk);
 		if([SCRATCHPAD+cur]==-1 || [SCRATCHPAD+cur]=="") then
-			break;
+			cur=cur+1;
+			continue;
 		endif;
 		datablk=[SCRATCHPAD+cur];
 		load(1,datablk);
