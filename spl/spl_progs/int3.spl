@@ -13,6 +13,8 @@ if (fileDescriptor < 0 || fileDescriptor > 7) then
     ireturn;
 endif;
 
+//seek
+
 if ( sysCallNo == 6) then
 	// Implementation of Seek
     
@@ -55,6 +57,7 @@ if ( sysCallNo == 6) then
     
 endif;
 
+//read
 
 if(sysCallNo==7) then
 	

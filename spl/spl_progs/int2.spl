@@ -121,7 +121,8 @@ if(sysCallNo==3) then
 	endif;
 
 	alias SWOTind S4;
-	SWOTind=[READY_LIST+32*Pid+15+2*fileDescriptor+1];
+	SWOTind=[READY_LIST+32*Pid+15+2*fileDescriptor];
+
 	[FILE_TABLE+2*SWOTind+1]=[FILE_TABLE+2*SWOTind+1]-1;
 	if([FILE_TABLE+2*SWOTind+1]==0) then
 		[FILE_TABLE+2*SWOTind]=-1;

@@ -118,7 +118,7 @@ if(sysCallNo==4) then
 	fentry=0;
 
 	while(fentry<128) do
-		if([FILE_TABLE+fentry]==ctr) then
+		if([FILE_TABLE+fentry]==ctr/8) then
 			[physicalSP-2]=-1;
 			ireturn;
 		endif;
