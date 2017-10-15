@@ -70,7 +70,7 @@ while(counter<=28) do				//MEM_LIST 0-28 set to used(1)
 endwhile;
 			
 while(counter<64) do
-	[MEM_LIST+counter]=1;
+	[MEM_LIST+counter]=0;
 	counter=counter+1;
 endwhile;
 
@@ -91,7 +91,7 @@ endwhile;
 counter=15;
 while(counter<31) do
 	[READY_LIST+counter]=-1;
-	counter=counter+1;
+	counter=counter+2;
 endwhile;
 
 [READY_LIST + 1] = 2; // Sets the entry for STATE as Running 
@@ -100,6 +100,8 @@ SP = 3 * 512;
 
 [28 * 512] = 0; // Set up the IP value for INIT in the stack 
 
-
-
 ireturn;
+
+
+
+

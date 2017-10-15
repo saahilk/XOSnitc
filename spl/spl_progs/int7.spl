@@ -1,0 +1,112 @@
+alias physicalSP S0;
+physicalSP = ([PTBR + 2 * (SP / 512)] * 512) + (SP % 512);
+
+alias sysCallNo S1;
+sysCallNo=[physicalSP-1];
+
+if(sysCallNo==10) then
+	alias ctr S3;
+	ctr=0;
+
+	while(ctr<32)do 
+		if([READY_LIST+32*ctr+1]==100+(PTBR-1024)/8) then
+			[READY_LIST+32*ctr+1]=1;
+		endif;
+		ctr=ctr+1;
+	endwhile;
+
+	ctr=0;
+
+	while(ctr<32) do
+		if([READY_LIST+32*ctr+1]==1) then
+			break;
+		endif;
+		ctr=ctr+1;
+	endwhile;
+
+	if(ctr==32) then
+		halt;
+	endif;
+
+	alias curpcb S4;
+	curpcb=READY_LIST+32*((PTBR-1024)/8);
+
+	alias count S5;
+	count=0;
+	while(count<8) do
+		if([curpcb+2*count+15]!=-1) then
+			[FILE_TABLE+[curpcb+15+count*2]*2+1]=[FILE_TABLE+[curpcb+15+count*2]*2+1]-1;
+			if([FILE_TABLE+[curpcb+15+count*2]*2+1]==0) then
+				[FILE_TABLE+[curpcb+15+count*2]*2]=-1;
+			endif;
+
+			[curpcb+count*2+15]=-1;
+			[curpcb+count*2+16]=0;
+
+		endif;
+		count=count+1;
+	endwhile;
+
+	[curpcb+1]=0;
+
+	count=0;
+	while(count<4) do
+		if([PTBR+count*2]==-1) then
+			count=count+1;
+			continue;
+		endif;
+		[MEM_LIST+[PTBR+count*2]]=0;
+		[PTBR+count*2]=-1;
+		[PTBR+count*2+1]="00";
+		count=count+1;
+	endwhile;
+
+	alias next S6;
+	next=READY_LIST+32*ctr;
+
+	BP=[next+2];	
+	SP=[next+3];
+	PTBR=[next+5];
+	PTLR=[next+6];
+
+	R0=[next+7];
+	R1=[next+8];
+	R2=[next+9];
+	R3=[next+10];
+	R4=[next+11];
+	R5=[next+12];
+	R6=[next+13];
+	R7=[next+14];
+
+	SP=SP+1;
+	[([PTBR + 2 * (SP / 512)] * 512) + (SP % 512)]=[next+4];
+
+	[next+1]=2;
+	ireturn;
+
+
+endif;
+
+if(sysCallNo==13) then
+	alias waitingPID S3;
+	waitingPID=[physicalSP-3];
+
+	if([READY_LIST+32*waitingPID+1]==0 || [READY_LIST+32*waitingPID+1]==2) then
+		[physicalSP-2]=-1;
+		ireturn;
+	endif;
+
+	[READY_LIST+32*((PTBR-1024)/8)+1]=100+waitingPID;
+endif;
+
+if(sysCallNo==14) then
+	alias ctr S3;
+	ctr=0;
+
+	while(ctr<32)do 
+		if([READY_LIST+32*ctr+1]==100+(PTBR-1024)/8) then
+			[READY_LIST+32*ctr+1]=1;
+		endif;
+		ctr=ctr+1;
+	endwhile;
+endif;
