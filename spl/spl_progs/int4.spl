@@ -52,7 +52,7 @@ if(sysCallNo==5) then
 	blkno=[SCRATCHPAD+datblk];
 	
 
-	if(blkno==-1) then
+	if(blkno==-1 || blkno=="") then
 		alias cur S10;
 		cur=0;
 		while(cur<448) do
@@ -73,7 +73,7 @@ if(sysCallNo==5) then
 		[DISK_LIST+cur]=1;
 		[SCRATCHPAD+datblk]=cur;
 		store(1,[FAT+fentry*8+2]);
-		[FAT+fentry+1]=[FAT+fentry+1]+512;
+		[FAT+fentry*8+1]=[FAT+fentry*8+1]+512;
 		store(5,19);
 		store(6,20);
 		blkno=cur;
@@ -89,3 +89,4 @@ if(sysCallNo==5) then
 	ireturn;
 
 endif;
+

@@ -31,6 +31,24 @@ if(sysCallNo==9) then
 	codeblk=0;
 	alias count S5;
 	count=0;
+
+	while(count<3) do 
+		if([PTBR+count*2+1]=="01" ||[PTBR+count*2+1]=="01") then
+			[MEM_LIST+[PTBR+count*2]]=[MEM_LIST+[PTBR+count*2]]-1;
+			count=count+1;
+			continue;
+		endif;
+
+		if([PTBR+counter*2+1]=="00") then
+			if([PTBR+counter*2]>447) then
+				[DISK_LIST+[PTBR+counter*2]]=[DISK_LIST+[PTBR+counter*2]]-1;
+				store(6,20);
+			endif;
+		endif;	
+		count=count+1;
+	endwhile;
+
+	count=0;
 	while(count<256) do
 		if([SCRATCHPAD+count]!="" && [SCRATCHPAD+count]>=0 && [SCRATCHPAD+count]<448) then
 			//print [SCRATCHPAD+count];
@@ -50,59 +68,14 @@ if(sysCallNo==9) then
 	pentry=0;
 	count=0;
 
-	while(count<3) do
-		if([PTBR+2*count]=="01"||[PTBR+2*count]=="11") then
-			pentry=pentry+1;
+	while(count<256) do
+		if([SCRATCHPAD+count]!="" && [SCRATCHPAD+count]>=0 && [SCRATCHPAD+count]<448) then
+			[PTBR+2*pentry]=
 		endif;
 		count=count+1;
 	endwhile;
 
-	if(pentry>codeblk) then
-		while(pentry!=codeblk) do
-			pentry=pentry-1;
-			[PTBR+pentry*2]=-1;
-			[PTBR+pentry*2+1]="00";
-		endwhile;
-	endif;
 	
-	//print pentry;	
-
-	if(pentry<codeblk) then
-		alias req S7;
-		req=codeblk-pentry;
-		count=0;
-		while(count<64 && req!=0) do
-			if([MEM_LIST+count]==0) then
-				req=req-1;
-			endif;
-			count=count+1;
-		endwhile;
-
-		if(count==64) then
-			[physicalSP-2]=-1;
-			ireturn;
-		endif;
-
-		req=codeblk-pentry;
-		count=0;
-		while(count<64 && req!=0) do
-			if([MEM_LIST+count]==1) then
-				count=count+1;
-				continue;
-			endif;
-			[MEM_LIST+count]=1;
-			[PTBR+(codeblk-req)*2]=count;
-			[PTBR+(codeblk-req)*2+1]="01";
-			req=req-1;
-			count=count+1;
-		endwhile;
-	endif;
-
-	count=0;
-	while(count<codeblk) do
-		load([PTBR+count*2],[SCRATCHPAD+count]);
-		count=count+1;
-	endwhile;
 
 	count=0;
 	alias PID S8;

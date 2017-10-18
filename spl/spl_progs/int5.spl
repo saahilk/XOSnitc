@@ -32,12 +32,7 @@ if(sysCallNo==8) then
 	alias iter S5;
 	iter=0;
 
-	while(iter<4) do
-		if([PTBR+iter*2+1]=="01" || [PTBR+iter*2+1]=="11") then
-			pageCtr=pageCtr+1;
-		endif;
-		iter=iter+1;
-	endwhile;	
+	
 
 	//print iter;
 
@@ -50,14 +45,14 @@ if(sysCallNo==8) then
 			memctr=memctr+1;
 			//print memctr;
 		endif;
-		if(memctr==pageCtr) then
+		if(memctr==1) then
 			break;
 		endif;
 		iter=iter+1;
 	endwhile;
 
 	//not enough memory
-	if(memctr<pageCtr) then
+	if(memctr==0) then
 		print "Memory Full";
 		[physicalSP-2]=-1;
 		ireturn;
@@ -67,38 +62,37 @@ if(sysCallNo==8) then
 	alias pageNo S8;
 	alias cPTBR S9;
 	counter=0;
-	iter=29;
 	cPTBR=ctr*8+1024;
+	
+	[MEM_LIST+iter]=1;
+	while(counter<512) do 
+		[iter*512+counter]=[[PTBR+6]*512+counter];
+		counter=counter+1;
+	endwhile;
 
-	while(counter<4) do
+	[cPTBR+6]=iter;
+	[cPTBR+7]="01";
 
-		if([PTBR+counter*2+1]=="00") then
-			[cPTBR+2*counter+1]="00";
+	counter=0;
+	while(counter<6) do
+		[cPTBR+counter]=[PTBR+counter];
+		counter=counter+1;
+	endwhile;
+
+	counter=0;
+	while(counter<3) do
+		if([PTBR+counter*2+1]=="01" || [PTBR+counter*2+1]=="01") then
+			[MEM_LIST+[PTBR+counter*2]]=[MEM_LIST+[PTBR+counter*2]]+1;
 			counter=counter+1;
 			continue;
 		endif;
 
-		while(iter<64) do
-			if([MEM_LIST+iter]==0) then
-				[MEM_LIST+iter]=1;
-				//print iter;
-				break;
+		if([PTBR+counter*2+1]=="00") then
+			if([PTBR+counter*2]>447) then
+				[DISK_LIST+[PTBR+counter*2]]=[DISK_LIST+[PTBR+counter*2]]+1;
+				store(6,20);
 			endif;
-			iter=iter+1;
-		endwhile;
-
-		memctr=0;
-		pageNo=[PTBR+counter*2];
-		//print pageNo;
-		while(memctr<512) do
-			[iter*512+memctr]=[pageNo*512+memctr];
-			memctr=memctr+1;
-		endwhile;
-
-		[cPTBR+counter*2]=iter;
-		[cPTBR+counter*2+1]="01";
-
-		counter=counter+1;
+		endif;	
 	endwhile;
 
 	[READY_LIST+ctr*32+2]=BP;
