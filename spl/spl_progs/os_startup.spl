@@ -56,6 +56,7 @@ load(5,19);
 //df-list 
 load(6,20);
 
+
 //timer
 
 load (9, 3);
@@ -63,6 +64,7 @@ load (10, 4);
 
 alias counter S0;
 counter=0;
+
 
 while(counter<=28) do				//MEM_LIST 0-28 set to used(1)
 	[MEM_LIST+counter]=1;
