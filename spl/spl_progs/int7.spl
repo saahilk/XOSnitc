@@ -4,8 +4,11 @@ physicalSP = ([PTBR + 2 * (SP / 512)] * 512) + (SP % 512);
 alias sysCallNo S1;
 sysCallNo=[physicalSP-1];
 
+alias ctr S3;
+
+//EXIT
 if(sysCallNo==10) then
-	alias ctr S3;
+	
 	ctr=0;
 
 	while(ctr<32)do 
@@ -61,6 +64,54 @@ if(sysCallNo==10) then
 		count=count+1;
 	endwhile;
 
+	
+
+endif;
+
+if(sysCallNo==13) then
+	alias waitingPID S3;
+	waitingPID=[physicalSP-3];
+
+	if([READY_LIST+32*waitingPID+1]==0 || [READY_LIST+32*waitingPID+1]==2) then
+		[physicalSP-2]=-1;
+		ireturn;
+	endif;
+
+	
+
+	alias currentPCB S4;
+	alias currentPID S5;
+	currentPID=(PTBR-1024)/8;
+	currentPCB = READY_LIST + 32 * currentPID;
+
+
+	[ currentPCB + 2 ] = BP;
+	[ currentPCB + 3 ] = SP - 1; 
+
+	alias physicalSP S2;
+	physicalSP = ([PTBR + 2 * (SP / 512)] * 512) + (SP % 512); 
+
+	// Save IP of current process in the PCB from the stack
+	[ currentPCB + 4 ] = [ physicalSP ]; 
+
+	[ currentPCB + 5 ] = PTBR;
+	[ currentPCB + 6 ] = PTLR ; 
+
+	[ currentPCB + 7 ] = R0; 
+	[ currentPCB + 8 ] = R1;
+	[ currentPCB + 9 ] = R2;
+	[ currentPCB + 10 ] = R3;
+	[ currentPCB + 11 ] = R4;
+	[ currentPCB + 12 ] = R5;
+	[ currentPCB + 13 ] = R6;
+	[ currentPCB + 14 ] = R7;
+
+	[READY_LIST+32*((PTBR-1024)/8)+1]=100+waitingPID;
+
+endif;
+
+if(sysCallNo==10 || sysCallNo==13) then
+
 	alias next S6;
 	next=READY_LIST+32*ctr;
 
@@ -82,21 +133,8 @@ if(sysCallNo==10) then
 	[([PTBR + 2 * (SP / 512)] * 512) + (SP % 512)]=[next+4];
 
 	[next+1]=2;
+	[physicalSP-2]=0;
 	ireturn;
-
-
-endif;
-
-if(sysCallNo==13) then
-	alias waitingPID S3;
-	waitingPID=[physicalSP-3];
-
-	if([READY_LIST+32*waitingPID+1]==0 || [READY_LIST+32*waitingPID+1]==2) then
-		[physicalSP-2]=-1;
-		ireturn;
-	endif;
-
-	[READY_LIST+32*((PTBR-1024)/8)+1]=100+waitingPID;
 endif;
 
 if(sysCallNo==14) then
@@ -109,4 +147,8 @@ if(sysCallNo==14) then
 		endif;
 		ctr=ctr+1;
 	endwhile;
+
+	[physicalSP-2]=0;
+	ireturn;
+
 endif;

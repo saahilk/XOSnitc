@@ -4,10 +4,8 @@ decl
 enddecl
 integer main()
 {
-	integer pid;
-	print("Before Fork");
-	pid = Fork();
-	//print(pid);
-	print("After Fork");
+	print("Hello");
+	status=Exec("even.xsm");
+	print(status);
 	return 0;
 }

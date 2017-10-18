@@ -17,6 +17,8 @@ if(sysCallNo==9) then
 		endif;
 		ctr=ctr+1;
 	endwhile;
+	
+	//print ctr;	
 
 	if(ctr==64) then
 		[physicalSP-2]=-1;
@@ -30,11 +32,14 @@ if(sysCallNo==9) then
 	alias count S5;
 	count=0;
 	while(count<256) do
-		if([SCRATCHPAD+count]>=0 && [SCRATCHPAD+count]<256) then
+		if([SCRATCHPAD+count]!="" && [SCRATCHPAD+count]>=0 && [SCRATCHPAD+count]<448) then
+			//print [SCRATCHPAD+count];
 			codeblk=codeblk+1;
 		endif;
 		count=count+1;
 	endwhile;
+
+	//print codeblk;	
 
 	if(codeblk>3) then
 		[physicalSP-2]=-1;
@@ -59,6 +64,8 @@ if(sysCallNo==9) then
 			[PTBR+pentry*2+1]="00";
 		endwhile;
 	endif;
+	
+	//print pentry;	
 
 	if(pentry<codeblk) then
 		alias req S7;
@@ -86,6 +93,7 @@ if(sysCallNo==9) then
 			[MEM_LIST+count]=1;
 			[PTBR+(codeblk-req)*2]=count;
 			[PTBR+(codeblk-req)*2+1]="01";
+			req=req-1;
 			count=count+1;
 		endwhile;
 	endif;
@@ -105,19 +113,19 @@ if(sysCallNo==9) then
 			if([FILE_TABLE+2*[READY_LIST+32*PID+15+count*2]+1]==0) then
 				[FILE_TABLE+2*[READY_LIST+32*PID+15+count*2]]=-1;
 			endif;
-			[READY_LIST+15+2*count]=-1;
-			[READY_LIST+15+2*count+1]=0;
+			[READY_LIST+32*PID+15+2*count]=-1;
+			[READY_LIST+32*PID+15+2*count+1]=0;
 		endif;
 		count=count+1;
 	endwhile;
 
 	SP=3*512;
 	physicalSP=([PTBR + 2 * (SP / 512)] * 512) + (SP % 512);
-	[physicalSP]=0;
+	[physicalSP]=0;	//IP
 	[physicalSP-2]=0; //success
 	ireturn;
 
-
+  
 endif;
 
 if(sysCallNo==11) then
