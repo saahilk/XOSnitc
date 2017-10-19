@@ -1,0 +1,137 @@
+alias Cause S0;
+alias badVaddr S1;
+alias Ip_addr S2;
+alias physicalSP S10;
+
+Cause = EFR % 10;		// Gets value of cause field (size 1 char)
+badVaddr= (EFR/10) % 100;    // Gets value of BadVAddr 
+Ip_addr = (EFR/1000);		//Gets value of IP at the point of exception
+physicalSP=([PTBR + 2 * (SP / 512)] * 512) + (SP % 512);
+
+//print "In exc";
+
+if(Cause!=0) then
+	if(Cause==1) then
+		print "Illegal instr";
+	endif;
+	if(Cause==2) then
+		print "Illegal mem acc";
+	endif;
+
+	if(Cause==3) then
+		print "Arith excn";
+	endif;
+	if(Cause==4) then
+		print "Illeg operands";
+	endif;
+	SP = SP + 2;
+	inline "JMP 11776";
+endif;
+
+if(Cause==0) then
+	if([PTBR+2*badVaddr]==-1) then
+		print "Illgl ref";
+		SP = SP + 2;
+		inline "JMP 11776";
+	endif;
+
+	alias pageNo S3;
+	pageNo=0;
+	while(pageNo<64) do
+		if([MEM_LIST+pageNo]==0) then
+			[MEM_LIST+pageNo]=1;
+			break;
+		endif;
+		pageNo=pageNo+1;
+	endwhile;
+
+	
+
+	//second chance
+	if(pageNo==64) then
+		alias ctr S4;
+		alias cPTBR S5;
+		alias pg S6;
+		alias cur S7;
+		alias st S8;
+		ctr=0;
+	
+		print 1024+(st)%256;
+		st=PTBR-1024+2*badVaddr+2;
+		while(1) do
+			cPTBR=1024+(st)%256;
+			print "cpt";
+			print cPTBR;
+			print [cPTBR+1];
+			if(PTBR+2*badVaddr==cPTBR) then
+				st=st+2;
+				continue;
+			endif;
+
+			if(st%8==6) then
+				st=st+2;
+				continue;
+			endif;
+
+			if([cPTBR+1]=="11") then
+				[cPTBR+1]="01";
+			endif;
+
+			if([cPTBR+1]=="01") then
+				
+				if([MEM_LIST+[cPTBR]]<2) then
+					break;
+				endif;
+			endif;
+
+			st=st+2;
+		endwhile;
+
+		alias count S9;
+		count=448;
+		print "tfea";
+		while(count<512) do
+			if([DISK_LIST+count]==0) then
+				break;
+			endif;
+			count=count+1;
+		endwhile;
+
+		if(count==512) then
+			print "No disk spc";
+			[physicalSP+1]=10;
+			SP=SP+2;
+			inline "JMP 11776"; 
+			ireturn;
+		endif;
+
+		
+		if(count<512) then
+			store([cPTBR],count);
+			[DISK_LIST+count]=[DISK_LIST+count]+1;
+			[cPTBR]=count;
+			[cPTBR+1]="00";
+		endif;
+		pageNo=count;
+	endif;
+
+
+	if([PTBR+2*badVaddr]>20 && [PTBR+2*badVaddr]<448) then
+		load(pageNo,[PTBR+2*badVaddr]);
+	endif;
+
+	if([PTBR+2*badVaddr]>447 && [PTBR+2*badVaddr]<512) then
+		load(pageNo,[PTBR+2*badVaddr]);
+		[DISK_LIST+[PTBR+2*badVaddr]]=[DISK_LIST+[PTBR+2*badVaddr]]-1;
+	endif;
+
+	[PTBR+2*badVaddr]=pageNo;
+	[PTBR+2*badVaddr+1]="11";
+
+	SP=SP+1;
+	physicalSP=([PTBR + 2 * (SP / 512)] * 512) + (SP % 512);
+	[physicalSP]=Ip_addr;
+
+endif;
+
+ireturn;

@@ -58,6 +58,15 @@ if(sysCallNo==10) then
 			count=count+1;
 			continue;
 		endif;
+
+		if([PTBR+count*2+1]=="01" ||[PTBR+count*2+1]=="11" ) then
+			[MEM_LIST+[PTBR+count*2]]=[MEM_LIST+[PTBR+count*2]]-1;
+		endif;
+
+		if([PTBR+count*2+1]=="00" && [PTBR+count*2]>447) then 
+			[MEM_LIST+[PTBR+count*2]]=[MEM_LIST+[PTBR+count*2]]-1;
+			store(6,20);
+		endif;
 		[MEM_LIST+[PTBR+count*2]]=0;
 		[PTBR+count*2]=-1;
 		[PTBR+count*2+1]="00";

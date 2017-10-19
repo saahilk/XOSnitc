@@ -6,6 +6,7 @@ sysCallNo = [physicalSP - 1];
 
 //Exec
 if(sysCallNo==9) then
+	//print "In exec";
 	alias filename S2;
 	filename=[physicalSP-3];
 
@@ -33,15 +34,15 @@ if(sysCallNo==9) then
 	count=0;
 
 	while(count<3) do 
-		if([PTBR+count*2+1]=="01" ||[PTBR+count*2+1]=="01") then
+		if([PTBR+count*2+1]=="01" ||[PTBR+count*2+1]=="11") then
 			[MEM_LIST+[PTBR+count*2]]=[MEM_LIST+[PTBR+count*2]]-1;
 			count=count+1;
 			continue;
 		endif;
 
-		if([PTBR+counter*2+1]=="00") then
-			if([PTBR+counter*2]>447) then
-				[DISK_LIST+[PTBR+counter*2]]=[DISK_LIST+[PTBR+counter*2]]-1;
+		if([PTBR+count*2+1]=="00") then
+			if([PTBR+count*2]>447) then
+				[DISK_LIST+[PTBR+count*2]]=[DISK_LIST+[PTBR+count*2]]-1;
 				store(6,20);
 			endif;
 		endif;	
@@ -70,12 +71,19 @@ if(sysCallNo==9) then
 
 	while(count<256) do
 		if([SCRATCHPAD+count]!="" && [SCRATCHPAD+count]>=0 && [SCRATCHPAD+count]<448) then
-			[PTBR+2*pentry]=
+			[PTBR+2*pentry]=[SCRATCHPAD+count];
+			[PTBR+2*pentry+1]="00";
+			pentry=pentry+1;
 		endif;
 		count=count+1;
 	endwhile;
-
+	while(pentry<3) do
+		[PTBR+2*pentry]=-1;
+		[PTBR+2*pentry+1]="00";
+		pentry=pentry+1;
+	endwhile;
 	
+	[PTBR+7]="01";
 
 	count=0;
 	alias PID S8;
@@ -91,6 +99,7 @@ if(sysCallNo==9) then
 		endif;
 		count=count+1;
 	endwhile;
+
 
 	SP=3*512;
 	physicalSP=([PTBR + 2 * (SP / 512)] * 512) + (SP % 512);

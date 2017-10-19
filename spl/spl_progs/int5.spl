@@ -6,6 +6,7 @@ sysCallNo = [physicalSP - 1];
 
 //Fork
 if(sysCallNo==8) then
+	//print "In Fork";
 	alias ctr S2;
 	ctr=0;
 	while(ctr<32) do
@@ -51,7 +52,6 @@ if(sysCallNo==8) then
 		iter=iter+1;
 	endwhile;
 
-	//not enough memory
 	if(memctr==0) then
 		print "Memory Full";
 		[physicalSP-2]=-1;
@@ -93,6 +93,7 @@ if(sysCallNo==8) then
 				store(6,20);
 			endif;
 		endif;	
+		counter=counter+1;
 	endwhile;
 
 	[READY_LIST+ctr*32+2]=BP;

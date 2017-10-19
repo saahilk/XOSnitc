@@ -11,6 +11,7 @@ integer main()
 			break;
 		endif;
 		a=Fork();
+		print(a);
 		if(a==-1) then
 			print("Fork failed");
 			continue;
