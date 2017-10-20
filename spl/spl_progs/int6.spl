@@ -43,12 +43,12 @@ if(sysCallNo==9) then
 		if([PTBR+count*2+1]=="00") then
 			if([PTBR+count*2]>447) then
 				[DISK_LIST+[PTBR+count*2]]=[DISK_LIST+[PTBR+count*2]]-1;
-				store(6,20);
+				
 			endif;
 		endif;	
 		count=count+1;
 	endwhile;
-
+    store(6,20);
 	count=0;
 	while(count<256) do
 		if([SCRATCHPAD+count]!="" && [SCRATCHPAD+count]>=0 && [SCRATCHPAD+count]<448) then

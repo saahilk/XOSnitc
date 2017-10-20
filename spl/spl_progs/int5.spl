@@ -6,7 +6,7 @@ sysCallNo = [physicalSP - 1];
 
 //Fork
 if(sysCallNo==8) then
-	//print "In Fork";
+	print "In Fork";
 	alias ctr S2;
 	ctr=0;
 	while(ctr<32) do
@@ -39,7 +39,7 @@ if(sysCallNo==8) then
 
 	alias memctr S6;
 	memctr=0;
-	iter=29;
+	iter=25;
 
 	while(iter < 64) do
 		if([MEM_LIST+iter]==0) then
@@ -63,7 +63,13 @@ if(sysCallNo==8) then
 	alias cPTBR S9;
 	counter=0;
 	cPTBR=ctr*8+1024;
-	
+	print "iter";
+    print iter;
+    if(iter==50) then
+        while(1) do
+            iter=iter;
+        endwhile;
+    endif;
 	[MEM_LIST+iter]=1;
 	while(counter<512) do 
 		[iter*512+counter]=[[PTBR+6]*512+counter];

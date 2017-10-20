@@ -36,19 +36,26 @@ if(Cause==0) then
 	endif;
 
 	alias pageNo S3;
-	pageNo=0;
+	pageNo=26;
 	while(pageNo<64) do
+        print "fgh";
+        print [MEM_LIST+pageNo];
 		if([MEM_LIST+pageNo]==0) then
 			[MEM_LIST+pageNo]=1;
 			break;
 		endif;
 		pageNo=pageNo+1;
 	endwhile;
-
-	
+    print "pNO:";
+	print pageNo;
+    print [MEM_LIST+pageNo];
 
 	//second chance
 	if(pageNo==64) then
+        print "loop";
+        while(1) do
+            print "d";
+        endwhile;
 		alias ctr S4;
 		alias cPTBR S5;
 		alias pg S6;
@@ -127,7 +134,7 @@ if(Cause==0) then
 
 	[PTBR+2*badVaddr]=pageNo;
 	[PTBR+2*badVaddr+1]="11";
-
+    [MEM_LIST+pageNo]=1;
 	SP=SP+1;
 	physicalSP=([PTBR + 2 * (SP / 512)] * 512) + (SP % 512);
 	[physicalSP]=Ip_addr;
