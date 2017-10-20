@@ -8,7 +8,7 @@ badVaddr= (EFR/10) % 100;    // Gets value of BadVAddr
 Ip_addr = (EFR/1000);		//Gets value of IP at the point of exception
 physicalSP=([PTBR + 2 * (SP / 512)] * 512) + (SP % 512);
 
-//print "In exc";
+
 
 if(Cause!=0) then
 	if(Cause==1) then
@@ -26,6 +26,7 @@ if(Cause!=0) then
 	endif;
 	SP = SP + 2;
 	inline "JMP 11776";
+	ireturn;
 endif;
 
 if(Cause==0) then
@@ -38,38 +39,30 @@ if(Cause==0) then
 	alias pageNo S3;
 	pageNo=26;
 	while(pageNo<64) do
-        print "fgh";
-        print [MEM_LIST+pageNo];
+
+        //print [MEM_LIST+pageNo];
 		if([MEM_LIST+pageNo]==0) then
 			[MEM_LIST+pageNo]=1;
 			break;
 		endif;
 		pageNo=pageNo+1;
 	endwhile;
-    print "pNO:";
-	print pageNo;
-    print [MEM_LIST+pageNo];
 
 	//second chance
 	if(pageNo==64) then
-        print "loop";
-        while(1) do
-            print "d";
-        endwhile;
+
 		alias ctr S4;
 		alias cPTBR S5;
 		alias pg S6;
 		alias cur S7;
 		alias st S8;
 		ctr=0;
-	
-		print 1024+(st)%256;
+
+		//print 1024+(st)%256;
 		st=PTBR-1024+2*badVaddr+2;
 		while(1) do
 			cPTBR=1024+(st)%256;
-			print "cpt";
-			print cPTBR;
-			print [cPTBR+1];
+
 			if(PTBR+2*badVaddr==cPTBR) then
 				st=st+2;
 				continue;
@@ -96,7 +89,7 @@ if(Cause==0) then
 
 		alias count S9;
 		count=448;
-		print "tfea";
+
 		while(count<512) do
 			if([DISK_LIST+count]==0) then
 				break;
@@ -112,25 +105,33 @@ if(Cause==0) then
 			ireturn;
 		endif;
 
-		
+
 		if(count<512) then
 			store([cPTBR],count);
+			pageNo=[cPTBR];
 			[DISK_LIST+count]=[DISK_LIST+count]+1;
+			store(6,20);
 			[cPTBR]=count;
 			[cPTBR+1]="00";
 		endif;
-		pageNo=count;
+
 	endif;
 
 
-	if([PTBR+2*badVaddr]>20 && [PTBR+2*badVaddr]<448) then
+	if([PTBR+2*badVaddr]>20 && [PTBR+2*badVaddr]<=447) then
+
 		load(pageNo,[PTBR+2*badVaddr]);
 	endif;
+
+
+
 
 	if([PTBR+2*badVaddr]>447 && [PTBR+2*badVaddr]<512) then
 		load(pageNo,[PTBR+2*badVaddr]);
 		[DISK_LIST+[PTBR+2*badVaddr]]=[DISK_LIST+[PTBR+2*badVaddr]]-1;
+		store(6,20);
 	endif;
+
 
 	[PTBR+2*badVaddr]=pageNo;
 	[PTBR+2*badVaddr+1]="11";
