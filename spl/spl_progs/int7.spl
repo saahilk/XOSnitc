@@ -19,9 +19,10 @@ if(sysCallNo==10) then
 	endwhile;
 
 	ctr=0;
-
+	alias curPID S2;
+	curPID=(PTBR-1024)/8;
 	while(ctr<32) do
-		if([READY_LIST+32*ctr+1]==1) then
+		if([READY_LIST+32*((ctr+curPID)%32)+1]==1) then
 			break;
 		endif;
 		ctr=ctr+1;
@@ -32,7 +33,7 @@ if(sysCallNo==10) then
 	endif;
 
 	alias curpcb S4;
-	curpcb=READY_LIST+32*((PTBR-1024)/8);
+	curpcb=READY_LIST+32*(curPID);
 
 	alias count S5;
 	count=0;
@@ -64,10 +65,10 @@ if(sysCallNo==10) then
 		endif;
 
 		if([PTBR+count*2+1]=="00" && [PTBR+count*2]>447) then 
-			[MEM_LIST+[PTBR+count*2]]=[MEM_LIST+[PTBR+count*2]]-1;
+			[DISK_LIST+[PTBR+count*2]]=[DISK_LIST+[PTBR+count*2]]-1;
 			store(6,20);
 		endif;
-		[MEM_LIST+[PTBR+count*2]]=0;
+
 		[PTBR+count*2]=-1;
 		[PTBR+count*2+1]="00";
 		count=count+1;
@@ -115,13 +116,24 @@ if(sysCallNo==13) then
 	[ currentPCB + 13 ] = R6;
 	[ currentPCB + 14 ] = R7;
 
-	[READY_LIST+32*((PTBR-1024)/8)+1]=100+waitingPID;
+	[currentPCB+1]=100+waitingPID;
 
+	ctr=0;
+	alias curPID S2;
+	curPID=(PTBR-1024)/8;
+	while(ctr<32) do
+		if([READY_LIST+32*((ctr+curPID)%32)+1]==1) then
+			break;
+		endif;
+		ctr=ctr+1;
+	endwhile;
+	
 endif;
 
 if(sysCallNo==10 || sysCallNo==13) then
 
 	alias next S6;
+	
 	next=READY_LIST+32*ctr;
 
 	BP=[next+2];	

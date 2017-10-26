@@ -4,38 +4,32 @@ physicalSP = ([PTBR + 2 * (SP / 512)] * 512) + (SP % 512);
 alias sysCallNo S1;
 sysCallNo = [physicalSP - 1];
 
-//Fork
 if(sysCallNo==8) then
-	//print "In Fork";
 	alias ctr S2;
 	ctr=0;
 	while(ctr<32) do
-		if([READY_LIST+ctr*32+1]==0) then
+		if([READY_LIST+32*ctr+1]==0) then
 			break;
 		endif;
 		ctr=ctr+1;
 	endwhile;
-	//print ctr;
 
 	if(ctr==32) then				//ctr is childPID
+		print "PCBs full";
 		[physicalSP-2]=-1;
 		ireturn;
 	endif;
 
-	[READY_LIST+32*ctr]=ctr;
+	alias curPCB S4;
+	curPCB=READY_LIST+32*ctr;
+
+	[curPCB]=ctr;
 
 	alias curPID S3;
 	curPID=(PTBR-1024)/8;
 
-	alias pageCtr S4;
-	pageCtr=0;
-
 	alias iter S5;
 	iter=0;
-
-	
-
-	//print iter;
 
 	alias memctr S6;
 	memctr=0;
@@ -52,14 +46,57 @@ if(sysCallNo==8) then
 		iter=iter+1;
 	endwhile;
 
+	alias cPTBR S9;
 	if(memctr==0) then
-		print "Memory Full";
-		[physicalSP-2]=-1;
-		ireturn;
+		alias count S8;
+		count=PTBR-1024+6;
+		while(1) do
+			cPTBR=1024+(count)%256;
+			if(count%8==6) then
+				count=count+2;
+				continue;
+			endif;
+
+			if([cPTBR+1]=="11") then
+				[cPTBR+1]="01";
+			endif;
+
+			if([cPTBR+1]=="01" && [MEM_LIST+[cPTBR]]<2) then
+				break;
+			endif;
+
+			count=count+2;	
+		endwhile;
+
+		count=448;
+		while(count<512) do
+			if([DISK_LIST+count]==0) then
+				break;
+			endif;
+			count=count+1;
+		endwhile;
+
+		if(count==512) then
+			print "No disk spc";
+			[physicalSP+1]=10;
+			SP=SP+2;
+			inline "JMP 11776"; 
+			ireturn;
+		endif;
+
+
+		if(count<512) then
+			store([cPTBR],count);
+			iter=[cPTBR];
+			[DISK_LIST+count]=[DISK_LIST+count]+1;
+			store(6,20);
+			[cPTBR]=count;
+			[cPTBR+1]="00";
+		endif;
 	endif;
+
 	alias counter S7;
 	alias pageNo S8;
-	alias cPTBR S9;
 	counter=0;
 	cPTBR=ctr*8+1024;
 
@@ -97,42 +134,41 @@ if(sysCallNo==8) then
 		counter=counter+1;
 	endwhile;
 
-	[READY_LIST+ctr*32+2]=BP;
-	[READY_LIST+ctr*32+3]=SP-1;
+	[curPCB+2]=BP;
+	[curPCB+3]=SP-1;
 
 	//IP
-	[READY_LIST+ctr*32+4]=[physicalSP];
+	[curPCB+4]=[physicalSP];
 
-	[READY_LIST+ctr*32+5]=cPTBR;
-	[READY_LIST+ctr*32+6]=4;
+	[curPCB+5]=cPTBR;
+	[curPCB+6]=4;
 
-	[READY_LIST+ctr*32+7]=R0;
-	[READY_LIST+ctr*32+8]=R1;
-	[READY_LIST+ctr*32+9]=R2;
-	[READY_LIST+ctr*32+10]=R3;
-	[READY_LIST+ctr*32+11]=R4;
-	[READY_LIST+ctr*32+12]=R5;
-	[READY_LIST+ctr*32+13]=R6;
-	[READY_LIST+ctr*32+14]=R7;
+	[curPCB+7]=R0;
+	[curPCB+8]=R1;
+	[curPCB+9]=R2;
+	[curPCB+10]=R3;
+	[curPCB+11]=R4;
+	[curPCB+12]=R5;
+	[curPCB+13]=R6;
+	[curPCB+14]=R7;
 
-	[READY_LIST+ctr*32+31]=curPID;
+	[curPCB+31]=curPID;
 
 	counter=0;
 	while(counter<8) do
-		[READY_LIST+ctr*32+15+counter*2]=[READY_LIST+curPID*32+15+counter*2];
-		[READY_LIST+ctr*32+15+counter*2+1]=[READY_LIST+curPID*32+15+counter*2+1];
-		if([READY_LIST+ctr*32+15+counter*2]!=-1) then
-			[FILE_TABLE+2*[READY_LIST+ctr*32+15+counter*2]+1]=[FILE_TABLE+2*[READY_LIST+ctr*32+15+counter*2]+1]+1;
+		[curPCB+15+counter*2]=[READY_LIST+curPID*32+15+counter*2];
+		[curPCB+15+counter*2+1]=[READY_LIST+curPID*32+15+counter*2+1];
+		if([curPCB+15+counter*2]!=-1) then
+			[FILE_TABLE+2*[curPCB+15+counter*2]+1]=[FILE_TABLE+2*[curPCB+15+counter*2]+1]+1;
 		endif;
 		counter=counter+1;
 	endwhile;
 
-	[READY_LIST+ctr*32+1]=1;
+	[curPCB+1]=1;
 	[physicalSP-2]=ctr;
 
-	alias cphysicalSP S10;
-	cphysicalSP=([cPTBR + 2 * ((SP-1) / 512)] * 512) + ((SP-1) % 512);
-	[cphysicalSP-1]=-2;
+	[([cPTBR + 2 * ((SP-1) / 512)] * 512) + ((SP-1) % 512)-1]=-2;
 	ireturn;
 
 endif;
+

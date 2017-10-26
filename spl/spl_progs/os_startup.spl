@@ -108,7 +108,7 @@ endwhile;
 
 SP = 3 * 512; 
 
-[28 * 512] = 0; // Set up the IP value for INIT in the stack 
+[25 * 512] = 0; // Set up the IP value for INIT in the stack 
 
 ireturn;
 

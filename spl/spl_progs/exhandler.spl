@@ -25,6 +25,7 @@ if(Cause!=0) then
 		print "Illeg operands";
 	endif;
 	SP = SP + 2;
+	[physicalSP+1]=10;
 	inline "JMP 11776";
 	ireturn;
 endif;
@@ -33,6 +34,7 @@ if(Cause==0) then
 	if([PTBR+2*badVaddr]==-1) then
 		print "Illgl ref";
 		SP = SP + 2;
+		[physicalSP+1]=10;
 		inline "JMP 11776";
 	endif;
 

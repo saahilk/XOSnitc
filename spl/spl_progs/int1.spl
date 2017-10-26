@@ -153,7 +153,7 @@ if(sysCallNo==4) then
 	datactr=0;
 
 	while(datactr<256) do
-		[SCRATCHPAD+datactr]="";
+		[SCRATCHPAD+datactr]=-1;
 		datactr=datactr+1;
 	endwhile;
 
@@ -169,4 +169,6 @@ if(sysCallNo==4) then
 	[physicalSP-2]=0;
 	ireturn;
 
+
 endif;
+

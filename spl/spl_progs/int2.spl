@@ -7,7 +7,7 @@ sysCallNo=[physicalSP-1];
 //fetching arguments
 //SP-2 is space for return value
 
-
+//open
 if(sysCallNo==2) then
 	alias ctr S3;
 	ctr=0;
@@ -104,6 +104,8 @@ if(sysCallNo==2) then
 
 endif;
 
+
+//close
 if(sysCallNo==3) then
 	alias fileDescriptor S2;
 	fileDescriptor=[physicalSP-3];
